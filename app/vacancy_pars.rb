@@ -1,81 +1,71 @@
-require 'active_record'
 require 'nokogiri'
 require 'httparty'
+require 'dotenv'
+require_relative 'db'
+require_relative 'vacancy'
+Dotenv.load('.env', 'test.env')
 
-# Підключення до бази даних PostgreSQL
-ActiveRecord::Base.establish_connection(
-  adapter: 'postgresql',
-  host: 'localhost',
-  database: 'parsing',
-  user: 'bodya',
-  password: 'bodya1'
-)
-
-# Модель для таблиці вакансій
-class Vacancy < ActiveRecord::Base
-end
-
-# Створення таблиці, якщо вона ще не існує
-unless ActiveRecord::Base.connection.table_exists?(:vacancies)
-  ActiveRecord::Base.connection.create_table :vacancies do |t|
-    t.string :title
-    t.text :description
-    t.string :url
-    t.string :location
-
-    t.timestamps
-  end
-end
-
-# Функція для збору вакансій
-def scrape_vacancies
-  base_url = 'https://openai.com/careers/search'
-  response = HTTParty.get(base_url)
-
-  if response.body.nil? || response.body.empty?
-    puts 'Error: Empty response body'
-    exit
+class Scraper
+  def initialize
+    Dotenv.load(File.expand_path('../.env', __FILE__), File.expand_path('../test.env', __FILE__))
+    create_vacancies_table unless ActiveRecord::Base.connection.table_exists?(:vacancies)
   end
 
-  doc = Nokogiri::HTML(response.body)
+  def call
+    base_url = ENV['OPENAI_CAREERS_URL']
+    response = HTTParty.get(base_url)
 
-  # Отримати всі посилання на вакансії
-  vacancy_links = doc.css('.job-listing-title a').map { |link| link['href'] }
+    handle_empty_response_body(response.body)
 
-  # Зберегти інформацію про кожну вакансію
-  vacancy_links.each do |link|
-    vacancy_url = "https://openai.com#{link}"
-    vacancy_response = HTTParty.get(vacancy_url)
+    doc = Nokogiri::HTML(response.body)
+    vacancy_links = doc.css('.job-listing-title a').map { |link| link['href'] }
 
-    if vacancy_response.body.nil? || vacancy_response.body.empty?
-      puts "Error: Empty response body for vacancy #{vacancy_url}"
-      next
+    vacancy_links.each do |link|
+      scrape_individual_vacancy("https://openai.com#{link}")
     end
+  end
+
+  private
+
+  def create_vacancies_table
+    ActiveRecord::Base.connection.create_table :vacancies do |t|
+      t.string :title
+      t.text :description
+      t.string :url
+      t.string :location
+
+      t.timestamps
+    end
+  end
+
+  def handle_empty_response_body(body)
+    if body.nil? || body.empty?
+      puts 'Error: Empty response body'
+      exit
+    end
+  end
+
+  def scrape_individual_vacancy(vacancy_url)
+    vacancy_response = HTTParty.get(vacancy_url)
+    handle_empty_response_body(vacancy_response.body)
 
     vacancy_doc = Nokogiri::HTML(vacancy_response.body)
 
     title = vacancy_doc.css('.f-display-2').text.strip
     description = vacancy_doc.css('.ui-description').text.strip
     location = vacancy_doc.css('.f-subhead-1').text.strip
-    apply_link = vacancy_doc.css('.ui-link[aria-label="Apply now"]').first['href']
 
-    # Збереження в базу даних
-    Vacancy.create(
-      title: title,
-      description: description,
-      url: vacancy_url,
-      location: location
-    )
+    save_vacancy_to_database(title, description, vacancy_url, location)
 
     puts "Vacancy '#{title}' saved to the database."
   end
+
+  def save_vacancy_to_database(title, description, url, location)
+    Vacancy.create(
+      title: title,
+      description: description,
+      url: url,
+      location: location
+    )
+  end
 end
-
-# Виклик функції для збору вакансій
-#scrape_vacancies
-
-Vacancy.all.each do |a|
-  puts a.description
-end
-puts "Total Vacancies: #{Vacancy.count}"
-
