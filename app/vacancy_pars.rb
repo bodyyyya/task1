@@ -12,20 +12,22 @@ class Scraper
   end
 
   def call
-    base_url = ENV['OPENAI_CAREERS_URL']
-    response = HTTParty.get(base_url)
-
-    handle_empty_response_body(response.body)
-
-    doc = Nokogiri::HTML(response.body)
-    vacancy_links = doc.css('.job-listing-title a').map { |link| link['href'] }
-
-    vacancy_links.each do |link|
-      scrape_individual_vacancy("https://openai.com#{link}")
-    end
+    scraping
   end
+  def scraping
+      base_url = ENV['OPENAI_CAREERS_URL']
+      response = HTTParty.get(base_url)
+      handle_empty_response_body(response.body)
+      doc = Nokogiri::HTML(response.body)
+      vacancy_links = doc.css('ul[aria-label="All teams roles"] li a').map { |link| link['href'] if link['href'].include?("careers")}
 
+      vacancy_links.each do |link|
+        scrape_individual_vacancy("https://openai.com#{link}")
+      end
+    end
   private
+
+  
 
   def create_vacancies_table
     ActiveRecord::Base.connection.create_table :vacancies do |t|
@@ -33,7 +35,7 @@ class Scraper
       t.text :description
       t.string :url
       t.string :location
-
+      t.string :apply_link
       t.timestamps
     end
   end
@@ -54,18 +56,23 @@ class Scraper
     title = vacancy_doc.css('.f-display-2').text.strip
     description = vacancy_doc.css('.ui-description').text.strip
     location = vacancy_doc.css('.f-subhead-1').text.strip
+    apply_link = vacancy_doc.at_css('.lg\\:absolute.top-0.left-0.right-0.flex.flex-col a[aria-label="Apply now"]')&.[]('href')
+    save_vacancy_to_database(title, description, vacancy_url, location, apply_link)
 
-    save_vacancy_to_database(title, description, vacancy_url, location)
-
-    puts "Vacancy '#{title}' saved to the database."
   end
 
-  def save_vacancy_to_database(title, description, url, location)
-    Vacancy.create(
-      title: title,
-      description: description,
-      url: url,
-      location: location
-    )
+  def save_vacancy_to_database(title, description, vacancy_url, location, apply_link)
+    existing_vacancy = Vacancy.find_by(url: vacancy_url)
+    if existing_vacancy
+      existing_vacancy.update(title: title, description: description, location: location, apply_link: apply_link)
+    else
+      Vacancy.create(
+        title: title,
+        description: description,
+        url: vacancy_url,
+        location: location,
+        apply_link: apply_link
+      )
+    end
   end
 end
