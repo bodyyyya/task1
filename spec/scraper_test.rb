@@ -22,9 +22,8 @@ RSpec.describe Scraper do
 
     it 'scrapes and saves vacancies to the database' do
       Database.connect_db
-      Vacancy.all
-      vacancy = Vacancy.first
       # Replace with the actual assertions based on your HTML content
+      vacancy = Vacancy.find_by(title: 'Account Associate')
       expect(vacancy.title).to eq('Account Associate')
       expect(vacancy.location).to eq('San Francisco, California, United States — Go To Market')
       expect(vacancy.url).to eq(saved_link)
