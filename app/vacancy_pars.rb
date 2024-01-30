@@ -1,9 +1,11 @@
 require 'nokogiri'
 require 'httparty'
-require 'dotenv'
+require 'dotenv/load'
 require_relative 'db'
 require_relative 'vacancy'
 Dotenv.load('.env', 'test.env')
+
+Database.connect_db
 
 class Scraper
   def initialize
@@ -83,3 +85,4 @@ class Scraper
     )
   end
 end
+Database.connect_db
