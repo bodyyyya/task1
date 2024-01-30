@@ -7,13 +7,13 @@ Dotenv.load('.env', 'test.env')
 
 class Scraper
   def initialize
-    Dotenv.load(File.expand_path('../.env', __FILE__), File.expand_path('../test.env', __FILE__))
     create_vacancies_table unless ActiveRecord::Base.connection.table_exists?(:vacancies)
   end
 
-  def call
-    scraping
+  def self.call
+    new.scraping
   end
+
   def scraping
       base_url = ENV['OPENAI_CAREERS_URL']
       response = HTTParty.get(base_url)
@@ -26,8 +26,6 @@ class Scraper
       end
     end
   private
-
-  
 
   def create_vacancies_table
     ActiveRecord::Base.connection.create_table :vacancies do |t|
@@ -57,22 +55,31 @@ class Scraper
     description = vacancy_doc.css('.ui-description').text.strip
     location = vacancy_doc.css('.f-subhead-1').text.strip
     apply_link = vacancy_doc.at_css('.lg\\:absolute.top-0.left-0.right-0.flex.flex-col a[aria-label="Apply now"]')&.[]('href')
-    save_vacancy_to_database(title, description, vacancy_url, location, apply_link)
+    save_vacancy(title, description, vacancy_url, location, apply_link)
 
   end
 
-  def save_vacancy_to_database(title, description, vacancy_url, location, apply_link)
+  def save_vacancy(title, description, vacancy_url, location, apply_link)
     existing_vacancy = Vacancy.find_by(url: vacancy_url)
+  
     if existing_vacancy
-      existing_vacancy.update(title: title, description: description, location: location, apply_link: apply_link)
+      update_vacancy(existing_vacancy, title, description, location, apply_link)
     else
-      Vacancy.create(
-        title: title,
-        description: description,
-        url: vacancy_url,
-        location: location,
-        apply_link: apply_link
-      )
+      create_vacancy(title, description, vacancy_url, location, apply_link)
     end
+  end
+  
+  def update_vacancy(existing_vacancy, title, description, location, apply_link)
+    existing_vacancy.update(title: title, description: description, location: location, apply_link: apply_link)
+  end
+  
+  def create_vacancy(title, description, vacancy_url, location, apply_link)
+    Vacancy.create(
+      title: title,
+      description: description,
+      url: vacancy_url,
+      location: location,
+      apply_link: apply_link
+    )
   end
 end

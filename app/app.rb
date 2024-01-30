@@ -4,7 +4,6 @@ require_relative 'db'
 
 Database.connect_db
 
-
 unless ActiveRecord::Base.connection.table_exists?('vacancies')
   ActiveRecord::Base.connection.create_table :vacancies do |t|
     t.string :title
@@ -16,7 +15,6 @@ unless ActiveRecord::Base.connection.table_exists?('vacancies')
   end
 end
 
-scraper = Scraper.new
-scraper.scraping
+Scraper.call
 
 puts "Total Vacancies: #{Vacancy.count}"
