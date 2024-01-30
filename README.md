@@ -104,4 +104,3 @@ irb
 irb(main):001:0> require "vacancy_pars"
 => true
 irb(main):002:0> Scraper.call
-```
