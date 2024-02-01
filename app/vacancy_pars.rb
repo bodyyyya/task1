@@ -4,11 +4,18 @@ require 'dotenv/load'
 require_relative 'db'
 require_relative 'vacancy'
 Dotenv.load('.env', 'test.env')
-
 Database.connect_db
 
 class Scraper
-  def initialize
+  attr_accessor :title, :description, :vacancy_url, :location, :apply_link
+
+  def initialize(title = nil, description = nil, vacancy_url = nil, location = nil, apply_link = nil)
+    Database.connect_db
+    @title = title
+    @description = description
+    @vacancy_url = vacancy_url
+    @location = location
+    @apply_link = apply_link
     create_vacancies_table unless ActiveRecord::Base.connection.table_exists?(:vacancies)
   end
 
@@ -29,21 +36,10 @@ class Scraper
     end
   private
 
-  def create_vacancies_table
-    ActiveRecord::Base.connection.create_table :vacancies do |t|
-      t.string :title
-      t.text :description
-      t.string :url
-      t.string :location
-      t.string :apply_link
-      t.timestamps
-    end
-  end
-
   def handle_empty_response_body(body)
     if body.nil? || body.empty?
       puts 'Error: Empty response body'
-      exit
+      return
     end
   end
 
@@ -65,13 +61,13 @@ class Scraper
     existing_vacancy = Vacancy.find_by(url: vacancy_url)
   
     if existing_vacancy
-      update_vacancy(existing_vacancy, title, description, location, apply_link)
+      update_vacancy(existing_vacancy, title, description, vacancy_url, location, apply_link)
     else
       create_vacancy(title, description, vacancy_url, location, apply_link)
     end
   end
   
-  def update_vacancy(existing_vacancy, title, description, location, apply_link)
+  def update_vacancy(existing_vacancy, title, description, vacancy_url, location, apply_link)
     existing_vacancy.update(title: title, description: description, location: location, apply_link: apply_link)
   end
   
