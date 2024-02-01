@@ -20,10 +20,10 @@ class Scraper
   end
 
   def self.call
-    new.scraping
+    scraping
   end
 
-  def scraping
+  def self.scraping
       base_url = ENV['OPENAI_CAREERS_URL']
       response = HTTParty.get(base_url)
       handle_empty_response_body(response.body)
@@ -36,14 +36,14 @@ class Scraper
     end
   private
 
-  def handle_empty_response_body(body)
+  def self.handle_empty_response_body(body)
     if body.nil? || body.empty?
       puts 'Error: Empty response body'
       return
     end
   end
 
-  def scrape_individual_vacancy(vacancy_url)
+  def self.scrape_individual_vacancy(vacancy_url)
     vacancy_response = HTTParty.get(vacancy_url)
     handle_empty_response_body(vacancy_response.body)
 
@@ -57,7 +57,7 @@ class Scraper
 
   end
 
-  def save_vacancy(title, description, vacancy_url, location, apply_link)
+  def self.save_vacancy(title, description, vacancy_url, location, apply_link)
     existing_vacancy = Vacancy.find_by(url: vacancy_url)
   
     if existing_vacancy
@@ -67,11 +67,11 @@ class Scraper
     end
   end
   
-  def update_vacancy(existing_vacancy, title, description, vacancy_url, location, apply_link)
+  def self.update_vacancy(existing_vacancy, title, description, vacancy_url, location, apply_link)
     existing_vacancy.update(title: title, description: description, location: location, apply_link: apply_link)
   end
   
-  def create_vacancy(title, description, vacancy_url, location, apply_link)
+  def self.create_vacancy(title, description, vacancy_url, location, apply_link)
     Vacancy.create(
       title: title,
       description: description,
