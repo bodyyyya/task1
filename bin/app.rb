@@ -1,6 +1,6 @@
 require 'dotenv/load'
-require_relative 'vacancy_pars'
-require_relative 'db'
+require_relative '../app/vacancy_pars'
+require_relative '../app/db'
 
 Database.connect_db
 
