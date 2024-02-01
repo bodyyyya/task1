@@ -76,7 +76,9 @@ rspec spec/scraper_test.rb
 ```
 
 # Vacancy Parser Gem
-
+- Gem version: 0.1.6
+- Summary: A Ruby gem for parsing vacancies from OpenAI.
+- Description: Ruby gem for scraping vacancies from a OpenAI website and save it to database.
 ### Make sure you have created an .env file with your database credentials:
 ```bash
 OPENAI_CAREERS_URL=https://openai.com/careers/search
@@ -87,12 +89,12 @@ DATABASE_PASSWORD=your_database_password
 ### Make sure you have a cloned vacancy_pars file:
 It's look like this:
 ```bash
-vacancy_pars-0.1.5.gem
+vacancy_pars-0.1.6.gem
 ```
 
 ### Gem install command
 ```bash
-gem install vacancy_pars-0.1.5.gem
+gem install vacancy_pars-0.1.6.gem
 ```
 
 ### Start irb console:
