@@ -6,19 +6,16 @@ require 'dotenv/load'
 require_relative 'db'
 require_relative 'vacancy'
 Dotenv.load('.env', 'test.env')
-Database.connect_db
 
 class Scraper
   attr_accessor :title, :description, :vacancy_url, :location, :apply_link
 
   def initialize(title = nil, description = nil, vacancy_url = nil, location = nil, apply_link = nil)
-    Database.connect_db
     @title = title
     @description = description
     @vacancy_url = vacancy_url
     @location = location
     @apply_link = apply_link
-    create_vacancies_table unless ActiveRecord::Base.connection.table_exists?(:vacancies)
   end
 
   def self.call
@@ -45,7 +42,6 @@ class Scraper
 
   def handle_empty_response_body(body)
     return unless body.nil? || body.empty?
-
     puts 'Error: Empty response body'
     nil
   end
@@ -87,4 +83,3 @@ class Scraper
     )
   end
 end
-Database.connect_db

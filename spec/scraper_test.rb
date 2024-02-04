@@ -10,7 +10,7 @@ RSpec.describe Scraper do
     let(:base_url) { 'https://openai.com/careers/search' }
     let(:invalid_html) { '<html><head></head><body><p>Not a valid job listing page</p></body></html>' }
     let(:saved_link) { 'https://openai.com/careers/analytics-data-engineer-applied-engineering' }
-    let(:scraper) {Scraper.new}
+    let(:scraper) { Scraper.new }
 
     before do
       stub_request(:get, ENV['OPENAI_CAREERS_URL'])
