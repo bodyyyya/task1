@@ -10,7 +10,7 @@ Dotenv.load('.env', 'test.env')
 class Scraper
   attr_accessor :title, :description, :vacancy_url, :location, :apply_link
 
-  def initialize(title = nil, description = nil, vacancy_url = nil, location = nil, apply_link = nil)
+  def initialize(title: '', description: '', vacancy_url: '', location: '', apply_link: '')
     @title = title
     @description = description
     @vacancy_url = vacancy_url
@@ -41,9 +41,8 @@ class Scraper
   end
 
   def handle_empty_response_body(body)
-    return unless body.nil? || body.empty?
+    return body.nil? || body.empty?
     puts 'Error: Empty response body'
-    nil
   end
 
   def scrape_individual_vacancy(vacancy_url)
