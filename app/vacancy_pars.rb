@@ -41,7 +41,7 @@ class Scraper
   end
 
   def handle_empty_response_body(body)
-    return body.nil? || body.empty?
+    return body.to_s.empty?
     puts 'Error: Empty response body'
   end
 
