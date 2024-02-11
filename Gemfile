@@ -1,8 +1,14 @@
-source "https://rubygems.org"
+# frozen_string_literal: true
 
-ruby "3.0.2"
+source 'https://rubygems.org'
 
-gem 'nokogiri'
+ruby '3.3.0'
+
 gem 'activerecord'
-gem 'open-uri'
+gem 'dotenv'
+gem 'httparty'
+gem 'nokogiri'
 gem 'pg'
+gem 'rspec'
+gem 'rubocop'
+gem 'webmock'
