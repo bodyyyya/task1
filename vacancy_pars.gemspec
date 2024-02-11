@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
   s.name          = 'vacancy_pars'
-  s.version       = '0.1.7'
+  s.version       = '0.1.8'
   s.summary       = 'A Ruby gem for parsing vacancies from OpenAI.'
   s.description   = 'Ruby gem for scraping vacancies from a OpenAI website and save it to database.'
   s.authors       = ['Bogdan Vintoniuk']

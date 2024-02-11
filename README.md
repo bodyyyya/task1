@@ -105,4 +105,5 @@ irb
 ```bash
 irb(main):001:0> require "vacancy_pars"
 => true
-irb(main):002:0> Scraper.call
+irb(main):003:0> Database.connect_db
+irb(main):003:0> Scraper.call
